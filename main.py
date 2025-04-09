@@ -7,43 +7,54 @@
 
 import sys
 import argparse
+from datetime import datetime
 from kumyoung.crawler import crawl_and_save as crawl_kumyoung
 from taejin.crawler import crawl_and_save as crawl_taejin
+from kumyoung.popular_chart import crawl_and_save as crawl_kumyoung_popular
 
 
 def main():
     """
-    메인 실행 함수
+    노래방 크롤링 도구
+    크롤링할 노래방 서비스를 결정하고 실행합니다.
+    'kumyoung', 'taejin', 'all', 'ky_popular' 중 선택
     """
-    # 명령행 인자 파싱
+    # 명령줄 인자 파싱
     parser = argparse.ArgumentParser(description="노래방 크롤링 도구")
     parser.add_argument(
-        "--target",
-        choices=["kumyoung", "taejin", "all"],
-        default="kumyoung",
-        help="크롤링할 노래방(금영, 태진, 모두)",
+        "service",
+        choices=["kumyoung", "taejin", "all", "ky_popular"],
+        help="크롤링할 노래방 서비스: 'kumyoung', 'taejin', 'all', 'ky_popular'",
     )
+
+    # 인자 해석
     args = parser.parse_args()
+    service = args.service
 
-    success = True
+    # 시작 시간 출력
+    start_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    print(f"\n--- 크롤링 시작: {start_time} ---\n")
 
-    # 금영 노래방 크롤링
-    if args.target in ["kumyoung", "all"]:
-        print("=== 금영 노래방 크롤링 시작 ===")
-        kumyoung_success = crawl_kumyoung()
-        if not kumyoung_success:
-            success = False
-        print("=== 금영 노래방 크롤링 완료 ===\n")
+    # 서비스별 크롤링 실행
+    success = False
 
-    # 태진 노래방 크롤링
-    if args.target in ["taejin", "all"]:
-        print("=== 태진 노래방 크롤링 시작 ===")
-        taejin_success = crawl_taejin()
-        if not taejin_success:
-            success = False
-        print("=== 태진 노래방 크롤링 완료 ===\n")
+    if service == "kumyoung":
+        success = crawl_kumyoung()
+    elif service == "taejin":
+        success = crawl_taejin()
+    elif service == "ky_popular":
+        success = crawl_kumyoung_popular()
+    elif service == "all":
+        # 두 서비스 모두 실행
+        tj_success = crawl_taejin()
+        ky_success = crawl_kumyoung()
+        success = tj_success and ky_success
 
-    # 종료 코드 설정 (성공: 0, 실패: 1)
+    # 종료 시간 출력
+    end_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    print(f"\n--- 크롤링 종료: {end_time} ---\n")
+
+    # 성공 여부에 따른 종료 코드 반환
     return 0 if success else 1
 
 

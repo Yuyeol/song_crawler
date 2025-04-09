@@ -1,6 +1,6 @@
-import os
 import time
 import requests
+import datetime
 from multiprocessing import Pool
 from bs4 import BeautifulSoup
 from dotenv import load_dotenv
@@ -16,10 +16,10 @@ from utils import (
 load_dotenv()
 
 # 크롤링 설정
-START_NUMBER = int(os.getenv("START_NUMBER", 130))
-END_NUMBER = int(os.getenv("END_NUMBER", 138))
+START_NUMBER = 130
+END_NUMBER = 143
 PROCESSES = 4  # 멀티프로세싱 프로세스 수
-KY_TABLE_NAME = os.getenv("SUPABASE_KY_TABLE", "kumyoung_songs")
+KY_TABLE_NAME = "ky_songs"
 OUTPUT_FILE = "ky_songs.xlsx"
 TIMEOUT = 10  # 요청 타임아웃(초)
 
@@ -32,6 +32,7 @@ DATA_FIELDS = [
     "lyricist",
     "release_date",
     "lyrics",
+    "created_at",
 ]
 
 # 브라우저 헤더
@@ -95,6 +96,7 @@ def crawl_song_info(song_number):
         # 가사는 특별 처리 (텍스트 변환 방식 다름)
         lyrics_el = result_row.select_one(selectors["lyrics"])
         data["lyrics"] = lyrics_el.get_text(strip=True) if lyrics_el else "정보 없음"
+        data["created_at"] = datetime.date.today().isoformat()
 
         return data
 
@@ -184,7 +186,7 @@ def crawl_and_save():
     print("\nSupabase에 데이터 업로드 중...")
     upload_data = filter_data_fields(success_results, DATA_FIELDS)
     upload_success = upload_to_supabase(
-        upload_data, KY_TABLE_NAME, conflict_column="number"
+        upload_data, KY_TABLE_NAME, conflict_column="number", update_mode="upsert"
     )
 
     if upload_success:

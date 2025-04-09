@@ -1,6 +1,6 @@
-import os
 import time
 import requests
+import datetime
 from multiprocessing import Pool
 from bs4 import BeautifulSoup
 from dotenv import load_dotenv
@@ -16,15 +16,15 @@ from utils import (
 load_dotenv()
 
 # 크롤링 설정
-START_NUMBER = int(os.getenv("TJ_START_NUMBER", 1))
-END_NUMBER = int(os.getenv("TJ_END_NUMBER", 10))
+START_NUMBER = 1
+END_NUMBER = 13
 PROCESSES = 4  # 멀티프로세싱 프로세스 수
-TJ_TABLE_NAME = os.getenv("SUPABASE_TJ_TABLE", "taejin_songs")
+TJ_TABLE_NAME = "tj_songs"
 OUTPUT_FILE = "tj_songs.xlsx"
 TIMEOUT = 10  # 요청 타임아웃(초)
 
 # 필수 데이터 필드
-DATA_FIELDS = ["number", "title", "singer"]
+DATA_FIELDS = ["number", "title", "singer", "created_at"]
 
 # 브라우저 헤더
 BROWSER_HEADERS = {
@@ -83,12 +83,14 @@ def crawl_song_info(song_number):
         number = song_number_el[0].text.strip() if song_number_el else "정보 없음"
         title = song_title_el[0].text.strip() if song_title_el else "정보 없음"
         singer = singer_name_el[0].text.strip() if singer_name_el else "정보 없음"
+        created_at = datetime.date.today().isoformat()
 
         # 노래 정보를 딕셔너리로 반환
         return {
             "number": number,
             "title": title,
             "singer": singer,
+            "created_at": created_at,
         }
 
     except Exception as e:
@@ -180,7 +182,7 @@ def crawl_and_save():
     print("\nSupabase에 데이터 업로드 중...")
     upload_data = filter_data_fields(success_results, DATA_FIELDS)
     upload_success = upload_to_supabase(
-        upload_data, TJ_TABLE_NAME, conflict_column="number"
+        upload_data, TJ_TABLE_NAME, conflict_column="number", update_mode="upsert"
     )
 
     if upload_success:
