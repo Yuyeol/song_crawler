@@ -8,9 +8,8 @@
 import sys
 import argparse
 from datetime import datetime
-from kumyoung.crawler import crawl_and_save as crawl_kumyoung
-from taejin.crawler import crawl_and_save as crawl_taejin
-from kumyoung.popular_chart import crawl_and_save as crawl_kumyoung_popular
+from all_songs import crawl_kumyoung, crawl_taejin
+from popular_songs import crawl_kumyoung_popular
 
 
 def main():
