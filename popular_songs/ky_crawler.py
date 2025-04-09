@@ -1,15 +1,8 @@
-import time
 import requests
 import datetime
 from bs4 import BeautifulSoup
 from dotenv import load_dotenv
-
-from utils import (
-    save_to_excel,
-    upload_to_supabase,
-    filter_data_fields,
-    calculate_elapsed_time,
-)
+from popular_songs.utils import run_chart_crawler
 
 # 환경 변수 로드
 load_dotenv()
@@ -98,12 +91,10 @@ def crawl_page(range_num, start_rank):
 def crawl_popular_chart():
     all_results = []
 
-    # 1페이지 크롤링
     print("인기 차트 첫 번째 페이지 크롤링 중...")
     page1_results = crawl_page(1, 1)
     all_results.extend(page1_results)
 
-    # 2페이지 크롤링
     if len(page1_results) > 0:
         print("인기 차트 두 번째 페이지 크롤링 중...")
         page2_results = crawl_page(2, 51)  # 두 번째 페이지는 51위부터 시작
@@ -113,36 +104,13 @@ def crawl_popular_chart():
 
 
 def crawl_and_save():
-    print("금영 노래방 인기 차트 크롤링을 시작합니다...")
-
-    start_time = time.time()
-    chart_results = crawl_popular_chart()
-
-    if not chart_results:
-        print("크롤링에 성공한 인기 차트 정보가 없습니다.")
-        return False
-
-    save_to_excel(chart_results, OUTPUT_FILE, DATA_FIELDS)
-
-    elapsed_time = calculate_elapsed_time(start_time)
-    print(f"크롤링 완료! 총 {len(chart_results)}개 곡, 소요 시간: {elapsed_time:.2f}초")
-
-    print("\nSupabase에 데이터 업로드 중...")
-    upload_data = filter_data_fields(chart_results, DATA_FIELDS)
-
-    # 인기차트는 테이블을 비우고 새로 데이터를 삽입
-    upload_success = upload_to_supabase(
-        upload_data, KY_POPULAR_TABLE_NAME, update_mode="truncate"
+    return run_chart_crawler(
+        crawler_func=crawl_popular_chart,
+        output_file=OUTPUT_FILE,
+        table_name=KY_POPULAR_TABLE_NAME,
+        data_fields=DATA_FIELDS,
+        service_name="금영 노래방 인기 차트",
     )
-
-    if upload_success:
-        print(
-            f"Supabase '{KY_POPULAR_TABLE_NAME}' 테이블에 {len(upload_data)}개의 인기 차트 정보 업로드 완료!"
-        )
-        return True
-    else:
-        print("Supabase 업로드에 실패했습니다.")
-        return False
 
 
 if __name__ == "__main__":
