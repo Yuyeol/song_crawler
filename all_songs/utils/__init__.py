@@ -9,6 +9,9 @@ from .process_utils import crawl_with_multiprocessing
 # 데이터 저장 및 업로드 유틸리티
 from .data_utils import save_and_upload_results
 
+# 텍스트 처리 유틸리티
+from .text_utils import extract_chosung, add_chosung_fields
+
 # 메인 크롤러 실행 유틸리티
 from .main_utils import run_crawler
 
@@ -18,4 +21,6 @@ __all__ = [
     "crawl_with_multiprocessing",
     "save_and_upload_results",
     "run_crawler",
+    "extract_chosung",
+    "add_chosung_fields",
 ]

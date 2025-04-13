@@ -2,14 +2,14 @@ import requests
 import datetime
 from bs4 import BeautifulSoup
 from dotenv import load_dotenv
-from all_songs.utils import run_crawler
+from all_songs.utils import run_crawler, add_chosung_fields
 
 # 환경 변수 로드
 load_dotenv()
 
 # 크롤링 설정
-START_NUMBER = 130
-END_NUMBER = 143
+START_NUMBER = 100
+END_NUMBER = 110
 PROCESSES = 4  # 멀티프로세싱 프로세스 수
 KY_TABLE_NAME = "ky_songs"
 OUTPUT_FILE = "ky_songs.xlsx"
@@ -19,7 +19,9 @@ TIMEOUT = 10  # 요청 타임아웃(초)
 DATA_FIELDS = [
     "number",
     "title",
+    "title_chosung",
     "singer",
+    "singer_chosung",
     "composer",
     "lyricist",
     "release_date",
@@ -73,6 +75,9 @@ def crawl_song_info(song_number):
         lyrics_el = result_row.select_one(selectors["lyrics"])
         data["lyrics"] = lyrics_el.get_text(strip=True) if lyrics_el else "정보 없음"
         data["created_at"] = datetime.date.today().isoformat()
+
+        # 초성 변환 적용
+        data = add_chosung_fields(data)
 
         return data
 

@@ -2,7 +2,7 @@ import requests
 import datetime
 from bs4 import BeautifulSoup
 from dotenv import load_dotenv
-from all_songs.utils import run_crawler
+from all_songs.utils import run_crawler, add_chosung_fields
 
 # 환경 변수 로드
 load_dotenv()
@@ -16,7 +16,14 @@ OUTPUT_FILE = "tj_songs.xlsx"
 TIMEOUT = 10  # 요청 타임아웃(초)
 
 # 필수 데이터 필드
-DATA_FIELDS = ["number", "title", "singer", "created_at"]
+DATA_FIELDS = [
+    "number",
+    "title",
+    "title_chosung",
+    "singer",
+    "singer_chosung",
+    "created_at",
+]
 
 # 브라우저 헤더
 BROWSER_HEADERS = {
@@ -62,12 +69,17 @@ def crawl_song_info(song_number):
         singer = singer_name_el[0].text.strip() if singer_name_el else "정보 없음"
         created_at = datetime.date.today().isoformat()
 
-        return {
+        data = {
             "number": number,
             "title": title,
             "singer": singer,
             "created_at": created_at,
         }
+
+        # 초성 변환 적용
+        data = add_chosung_fields(data)
+
+        return data
 
     except Exception as e:
         return {"number": str(song_number), "error": True, "error_message": str(e)}
