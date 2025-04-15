@@ -47,28 +47,41 @@ def crawl_song_info(song_number):
         html = response.content.decode("utf-8", "replace")
         soup = BeautifulSoup(html, "lxml")
 
-        song_number_el = soup.select(
-            "#BoardType1 > table > tbody > tr:nth-child(2) > td:nth-child(1)"
-        )
+        # 새로운 HTML 구조에 맞춰 셀렉터 수정
+        # 첫 번째 li를 제외한 나머지 li 선택 (첫 번째는 헤더)
+        song_list = soup.select("ul.chart-list-area > li:not(:first-child)")
 
-        song_title_el = soup.select(
-            "#BoardType1 > table > tbody > tr:nth-child(2) > td.left"
-        )
-
-        singer_name_el = soup.select(
-            "#BoardType1 > table > tbody > tr:nth-child(2) > td:nth-child(3)"
-        )
-
-        if not song_number_el or not song_title_el or not singer_name_el:
+        if not song_list:
             return {
                 "number": str(song_number),
                 "error": True,
                 "error_message": "검색 결과 없음",
             }
 
-        number = song_number_el[0].text.strip() if song_number_el else "정보 없음"
-        title = song_title_el[0].text.strip() if song_title_el else "정보 없음"
-        singer = singer_name_el[0].text.strip() if singer_name_el else "정보 없음"
+        # 첫 번째 결과를 가져옴
+        first_song = song_list[0]
+
+        # 노래 번호
+        song_number_el = first_song.select_one(".grid-item .num2 .highlight")
+
+        # 노래 제목
+        song_title_el = first_song.select_one(
+            ".grid-item.title3 .flex-box p:last-child span"
+        )
+
+        # 가수 이름
+        singer_name_el = first_song.select_one(".grid-item.title4.singer p span")
+
+        if not song_number_el or not song_title_el or not singer_name_el:
+            return {
+                "number": str(song_number),
+                "error": True,
+                "error_message": "검색 결과 요소 찾기 실패",
+            }
+
+        number = song_number_el.text.strip() if song_number_el else "정보 없음"
+        title = song_title_el.text.strip() if song_title_el else "정보 없음"
+        singer = singer_name_el.text.strip() if singer_name_el else "정보 없음"
         created_at = datetime.date.today().isoformat()
 
         # 기본 데이터
