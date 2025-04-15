@@ -16,6 +16,11 @@ from .japanese_utils import (
     romanize_japanese,
     korean_pronunciation_from_romaji,
 )
+from .text_conversion_utils import (
+    convert_mixed_text,
+    convert_mixed_text_with_info,
+    process_title_singer_for_supabase,
+)
 
 # 메인 크롤러 실행 유틸리티
 from .main_utils import run_crawler
@@ -32,4 +37,7 @@ __all__ = [
     "extract_japanese_pronunciation",
     "romanize_japanese",
     "korean_pronunciation_from_romaji",
+    "convert_mixed_text",
+    "convert_mixed_text_with_info",
+    "process_title_singer_for_supabase",
 ]

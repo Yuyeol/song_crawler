@@ -2,7 +2,7 @@ import requests
 import datetime
 from bs4 import BeautifulSoup
 from dotenv import load_dotenv
-from all_songs.utils import run_crawler, add_chosung_fields
+from all_songs.utils import run_crawler, process_title_singer_for_supabase
 
 # 환경 변수 로드
 load_dotenv()
@@ -19,8 +19,10 @@ TIMEOUT = 10  # 요청 타임아웃(초)
 DATA_FIELDS = [
     "number",
     "title",
+    "title_pron",
     "title_chosung",
     "singer",
+    "singer_pron",
     "singer_chosung",
     "composer",
     "lyricist",
@@ -76,8 +78,20 @@ def crawl_song_info(song_number):
         data["lyrics"] = lyrics_el.get_text(strip=True) if lyrics_el else "정보 없음"
         data["created_at"] = datetime.date.today().isoformat()
 
-        # 초성 변환 적용
-        data = add_chosung_fields(data)
+        # 다국어 변환 적용
+        processed_data = process_title_singer_for_supabase(
+            data["title"], data["singer"]
+        )
+
+        # 결과 데이터 병합
+        data.update(
+            {
+                "title_pron": processed_data["title_pron"],
+                "title_chosung": processed_data["title_chosung"],
+                "singer_pron": processed_data["singer_pron"],
+                "singer_chosung": processed_data["singer_chosung"],
+            }
+        )
 
         return data
 

@@ -2,7 +2,7 @@ import requests
 import datetime
 from bs4 import BeautifulSoup
 from dotenv import load_dotenv
-from all_songs.utils import run_crawler, add_chosung_fields
+from all_songs.utils import run_crawler, process_title_singer_for_supabase
 
 # 환경 변수 로드
 load_dotenv()
@@ -19,8 +19,10 @@ TIMEOUT = 10  # 요청 타임아웃(초)
 DATA_FIELDS = [
     "number",
     "title",
+    "title_pron",
     "title_chosung",
     "singer",
+    "singer_pron",
     "singer_chosung",
     "created_at",
 ]
@@ -36,7 +38,7 @@ BROWSER_HEADERS = {
 
 
 def crawl_song_info(song_number):
-    url = f"https://www.tjmedia.com/tjsong/song_search_list.asp?strType=16&natType=&strText={song_number}&strCond=1&strSize05=100"
+    url = f"https://www.tjmedia.com/song/accompaniment_search?nationType=&strType=16&searchTxt={song_number}"
 
     try:
         response = requests.get(url, headers=BROWSER_HEADERS, timeout=TIMEOUT)
@@ -69,6 +71,7 @@ def crawl_song_info(song_number):
         singer = singer_name_el[0].text.strip() if singer_name_el else "정보 없음"
         created_at = datetime.date.today().isoformat()
 
+        # 기본 데이터
         data = {
             "number": number,
             "title": title,
@@ -76,8 +79,18 @@ def crawl_song_info(song_number):
             "created_at": created_at,
         }
 
-        # 초성 변환 적용
-        data = add_chosung_fields(data)
+        # 다국어 변환 적용
+        processed_data = process_title_singer_for_supabase(title, singer)
+
+        # 결과 데이터 병합
+        data.update(
+            {
+                "title_pron": processed_data["title_pron"],
+                "title_chosung": processed_data["title_chosung"],
+                "singer_pron": processed_data["singer_pron"],
+                "singer_chosung": processed_data["singer_chosung"],
+            }
+        )
 
         return data
 
