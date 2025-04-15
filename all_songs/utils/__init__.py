@@ -10,10 +10,16 @@ from .process_utils import crawl_with_multiprocessing
 from .data_utils import save_and_upload_results
 
 # 텍스트 처리 유틸리티
-from .text_utils import extract_chosung, add_chosung_fields
+from .chosung_utils import extract_chosung, add_chosung_fields
+from .japanese_utils import (
+    extract_japanese_pronunciation,
+    romanize_japanese,
+    korean_pronunciation_from_romaji,
+)
 
 # 메인 크롤러 실행 유틸리티
 from .main_utils import run_crawler
+
 
 __all__ = [
     "process_results",
@@ -23,4 +29,7 @@ __all__ = [
     "run_crawler",
     "extract_chosung",
     "add_chosung_fields",
+    "extract_japanese_pronunciation",
+    "romanize_japanese",
+    "korean_pronunciation_from_romaji",
 ]

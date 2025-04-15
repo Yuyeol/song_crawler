@@ -8,8 +8,8 @@ from all_songs.utils import run_crawler, add_chosung_fields
 load_dotenv()
 
 # 크롤링 설정
-START_NUMBER = 1
-END_NUMBER = 13
+START_NUMBER = 68553
+END_NUMBER = 68563
 PROCESSES = 4  # 멀티프로세싱 프로세스 수
 TJ_TABLE_NAME = "tj_songs"
 OUTPUT_FILE = "tj_songs.xlsx"

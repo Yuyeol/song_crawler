@@ -5,7 +5,7 @@
 """
 
 import sys
-from utils.japanese_utils import extract_japanese_pronunciation
+from all_songs.utils.japanese_utils import extract_japanese_pronunciation
 
 
 def print_test_result(text):
