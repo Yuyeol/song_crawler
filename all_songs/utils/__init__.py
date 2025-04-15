@@ -10,7 +10,7 @@ from .process_utils import crawl_with_multiprocessing
 from .data_utils import save_and_upload_results
 
 # 텍스트 처리 유틸리티
-from .chosung_utils import extract_chosung, add_chosung_fields
+from .text_normalizers import extract_korean_chosung, normalize_english
 from .japanese_utils import (
     extract_japanese_pronunciation,
     romanize_japanese,
@@ -32,8 +32,8 @@ __all__ = [
     "crawl_with_multiprocessing",
     "save_and_upload_results",
     "run_crawler",
-    "extract_chosung",
-    "add_chosung_fields",
+    "extract_korean_chosung",
+    "normalize_english",
     "extract_japanese_pronunciation",
     "romanize_japanese",
     "korean_pronunciation_from_romaji",
