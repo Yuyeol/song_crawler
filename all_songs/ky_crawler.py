@@ -1,15 +1,20 @@
 import requests
 import datetime
+import os
 from bs4 import BeautifulSoup
 from dotenv import load_dotenv
-from all_songs.utils import run_crawler, process_title_singer_for_supabase
+from all_songs.utils import (
+    run_crawler,
+    process_title_singer_for_supabase,
+    get_numbers_to_crawl,
+)
 
 # 환경 변수 로드
 load_dotenv()
 
 # 크롤링 설정
-START_NUMBER = 100
-END_NUMBER = 110
+START_NUMBER = 121
+END_NUMBER = 130
 PROCESSES = 4  # 멀티프로세싱 프로세스 수
 KY_TABLE_NAME = "ky_songs"
 OUTPUT_FILE = "ky_songs.xlsx"
@@ -27,7 +32,6 @@ DATA_FIELDS = [
     "composer",
     "lyricist",
     "release_date",
-    "lyrics",
     "created_at",
 ]
 
@@ -60,28 +64,33 @@ def crawl_song_info(song_number):
 
         result_row = search_results[1]  # [0]은 헤더이므로 다음 row 선택
 
-        selectors = {
-            "title": ".search_chart_tit .tit",
-            "singer": ".search_chart_sng",
-            "composer": ".search_chart_cmp",
-            "lyricist": ".search_chart_wrt",
-            "release_date": ".search_chart_rel",
-            "lyrics": ".LyricsWrap .LyricsCont",
+        # 직접 각 요소를 선택
+        title_el = result_row.select_one(".search_chart_tit .tit")
+        singer_el = result_row.select_one(".search_chart_sng")
+        composer_el = result_row.select_one(".search_chart_cmp")
+        lyricist_el = result_row.select_one(".search_chart_wrt")
+        release_date_el = result_row.select_one(".search_chart_rel")
+
+        # 요소가 없으면 "정보 없음" 처리
+        title = title_el.text.strip() if title_el else "정보 없음"
+        singer = singer_el.text.strip() if singer_el else "정보 없음"
+        composer = composer_el.text.strip() if composer_el else "정보 없음"
+        lyricist = lyricist_el.text.strip() if lyricist_el else "정보 없음"
+        release_date = release_date_el.text.strip() if release_date_el else "정보 없음"
+
+        # 기본 데이터
+        data = {
+            "number": str(song_number),
+            "title": title,
+            "singer": singer,
+            "composer": composer,
+            "lyricist": lyricist,
+            "release_date": release_date,
+            "created_at": datetime.date.today().isoformat(),
         }
 
-        data = {"number": str(song_number)}
-        for key, selector in selectors.items():
-            element = result_row.select_one(selector)
-            data[key] = element.text.strip() if element else "정보 없음"
-
-        lyrics_el = result_row.select_one(selectors["lyrics"])
-        data["lyrics"] = lyrics_el.get_text(strip=True) if lyrics_el else "정보 없음"
-        data["created_at"] = datetime.date.today().isoformat()
-
         # 다국어 변환 적용
-        processed_data = process_title_singer_for_supabase(
-            data["title"], data["singer"]
-        )
+        processed_data = process_title_singer_for_supabase(title, singer)
 
         # 결과 데이터 병합
         data.update(
@@ -100,15 +109,24 @@ def crawl_song_info(song_number):
 
 
 def crawl_and_save():
+    # 크롤링할 번호 목록 가져오기
+    numbers_to_crawl = get_numbers_to_crawl(KY_TABLE_NAME, START_NUMBER, END_NUMBER)
+
+    if numbers_to_crawl is None:
+        return False
+
+    if len(numbers_to_crawl) == 0:
+        return True
+
+    # 크롤링 실행
     return run_crawler(
         crawler_func=crawl_song_info,
-        start_number=START_NUMBER,
-        end_number=END_NUMBER,
         processes=PROCESSES,
         output_file=OUTPUT_FILE,
         table_name=KY_TABLE_NAME,
         data_fields=DATA_FIELDS,
         service_name="금영 노래방",
+        custom_numbers=numbers_to_crawl,
     )
 
 

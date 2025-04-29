@@ -9,6 +9,9 @@ from .process_utils import crawl_with_multiprocessing
 # 데이터 저장 및 업로드 유틸리티
 from .data_utils import save_and_upload_results
 
+# DB 유틸리티
+from .db_utils import get_numbers_to_crawl
+
 # 텍스트 처리 유틸리티
 from .text_normalizers import extract_korean_chosung, normalize_english
 from .japanese_utils import (
@@ -40,4 +43,5 @@ __all__ = [
     "convert_mixed_text",
     "convert_mixed_text_with_info",
     "process_title_singer_for_supabase",
+    "get_numbers_to_crawl",
 ]

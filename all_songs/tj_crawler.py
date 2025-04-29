@@ -1,15 +1,20 @@
 import requests
 import datetime
+import os
 from bs4 import BeautifulSoup
 from dotenv import load_dotenv
-from all_songs.utils import run_crawler, process_title_singer_for_supabase
+from all_songs.utils import (
+    run_crawler,
+    process_title_singer_for_supabase,
+    get_numbers_to_crawl,
+)
 
 # 환경 변수 로드
 load_dotenv()
 
 # 크롤링 설정
-START_NUMBER = 68553
-END_NUMBER = 68563
+START_NUMBER = 1
+END_NUMBER = 10
 PROCESSES = 4  # 멀티프로세싱 프로세스 수
 TJ_TABLE_NAME = "tj_songs"
 OUTPUT_FILE = "tj_songs.xlsx"
@@ -112,15 +117,24 @@ def crawl_song_info(song_number):
 
 
 def crawl_and_save():
+    # 크롤링할 번호 목록 가져오기
+    numbers_to_crawl = get_numbers_to_crawl(TJ_TABLE_NAME, START_NUMBER, END_NUMBER)
+
+    if numbers_to_crawl is None:
+        return False
+
+    if len(numbers_to_crawl) == 0:
+        return True
+
+    # 크롤링 실행
     return run_crawler(
         crawler_func=crawl_song_info,
-        start_number=START_NUMBER,
-        end_number=END_NUMBER,
         processes=PROCESSES,
         output_file=OUTPUT_FILE,
         table_name=TJ_TABLE_NAME,
         data_fields=DATA_FIELDS,
         service_name="태진 노래방",
+        custom_numbers=numbers_to_crawl,
     )
 
 
