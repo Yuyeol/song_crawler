@@ -14,7 +14,7 @@ load_dotenv()
 
 # 크롤링 설정
 START_NUMBER = 1
-END_NUMBER = 10
+END_NUMBER = 100000
 PROCESSES = 4  # 멀티프로세싱 프로세스 수
 TJ_TABLE_NAME = "tj_songs"
 OUTPUT_FILE = "tj_songs.xlsx"
