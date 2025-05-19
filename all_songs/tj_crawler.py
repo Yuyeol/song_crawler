@@ -14,7 +14,7 @@ load_dotenv()
 
 # 크롤링 설정
 START_NUMBER = 1
-END_NUMBER = 100000
+END_NUMBER = 100
 PROCESSES = 4  # 멀티프로세싱 프로세스 수
 TJ_TABLE_NAME = "tj_songs"
 OUTPUT_FILE = "tj_songs.xlsx"
@@ -43,7 +43,7 @@ BROWSER_HEADERS = {
 
 
 def crawl_song_info(song_number):
-    url = f"https://www.tjmedia.com/song/accompaniment_search?nationType=&strType=16&searchTxt={song_number}"
+    url = f"https://www.tjmedia.com/song/accompaniment_search?pageNo=1&pageRowCnt=15&strSotrGubun=ASC&strSortType=pro&nationType=&strType=16&searchTxt={song_number}"
 
     try:
         response = requests.get(url, headers=BROWSER_HEADERS, timeout=TIMEOUT)
